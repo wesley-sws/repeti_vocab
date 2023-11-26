@@ -1,9 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 import datetime
+from django.conf import settings
 
 # Synset Model - stores synsets with unique identifiers
-class Synset(models.Model):
+class AppSynset(models.Model):
     synset_id = models.CharField(max_length=100, unique=True)
     definition = models.TextField()
     examples = models.TextField(blank=True)
@@ -11,12 +12,15 @@ class Synset(models.Model):
 
     def __str__(self):
         return self.synset_id
+    
+class CustomUser(AbstractUser):
+    email_verified = models.BooleanField(default=False)
 
 # UserList Model - tracks words each user is learning
 class UserList(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     word = models.CharField(max_length=100)
-    synset = models.ForeignKey(Synset, on_delete=models.SET_NULL, null=True, blank=True)
+    synset = models.ForeignKey(AppSynset, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.synset.synset_id}"
@@ -49,12 +53,13 @@ class WordReview(models.Model):
 
     def __str__(self):
         return f"{self.user_list_entry.user.username} - {self.user_list_entry.synset.synset_id}"
-    
+
+# MCQOption Model - stores incorrect MCQAnswers for each word synset pair
 class MCQOption(models.Model):
 
     word = models.CharField(max_length=100)
-    main_synset = models.ForeignKey(Synset, related_name='main_synset', on_delete=models.CASCADE)
-    option_synset = models.ForeignKey(Synset, related_name='option_synset', on_delete=models.CASCADE)
+    main_synset = models.ForeignKey(AppSynset, related_name='main_synset', on_delete=models.CASCADE)
+    option_synset = models.ForeignKey(AppSynset, related_name='option_synset', on_delete=models.CASCADE)
 
     def __str__(self):
         return f"Word: {self.word} - Main Synset: {self.main_synset.synset_id} - Option Synset: {self.option_synset.synset_id}"
