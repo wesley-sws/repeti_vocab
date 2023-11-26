@@ -7,8 +7,8 @@ backend/repeti_backend/repeti_backend/settings.py
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
-/.pnp
+node_modules/
+.pnp/
 .pnp.js
 
 # testing
