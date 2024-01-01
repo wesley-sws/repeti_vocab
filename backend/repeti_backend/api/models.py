@@ -1,7 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 import datetime
+from datetime import date
 from django.conf import settings
+# ignore all on_delete=... for AppSynset foreign key as no entries from AppSynset will ever be deleted
+
 
 # Synset Model - stores synsets with unique identifiers
 class AppSynset(models.Model):
@@ -30,25 +33,22 @@ class WordReview(models.Model):
     user_list_entry = models.ForeignKey(UserList, on_delete=models.CASCADE)
     easiness_factor = models.FloatField(default=2.5)
     repetition_number = models.IntegerField(default=0)
-    next_review_date = models.DateField(null=True, blank=True)
-    last_reviewed = models.DateField(null=True, blank=True)
+    review_date = models.DateField(null=True, blank=True)
+    interval = models.IntegerField(default=0)
 
     def update_review(self, quality):
-        # Adjusting the EF
-        self.easiness_factor = max(1.3, self.easiness_factor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)))
-
         # Incrementing the repetition number
         self.repetition_number += 1
-
         # Calculating the next review date
         if self.repetition_number == 1:
-            next_review_interval = 1
+            self.interval = 1
         elif self.repetition_number == 2:
-            next_review_interval = 6
+            self.interval = 6
         else:
-            next_review_interval = (self.repetition_number - 1) * self.easiness_factor
-
-        self.next_review_date = self.last_reviewed + datetime.timedelta(days=next_review_interval)
+            self.interval = round(self.interval * self.easiness_factor)
+        # Adjusting the EF
+        self.easiness_factor = max(1.3, self.easiness_factor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)))
+        self.next_review_date = self.review_date + datetime.timedelta(days=self.interval)
         self.save()
 
     def __str__(self):
@@ -63,3 +63,4 @@ class MCQOption(models.Model):
 
     def __str__(self):
         return f"Word: {self.word} - Main Synset: {self.main_synset.synset_id} - Option Synset: {self.option_synset.synset_id}"
+    
