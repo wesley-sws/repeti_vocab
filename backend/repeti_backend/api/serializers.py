@@ -4,8 +4,9 @@ from .models import *
 
 
 class AppSynsetSerializer(serializers.ModelSerializer):
-    pass
-
+    class Meta:
+        model = AppSynset
+        fields = '__all__'
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
@@ -24,8 +25,12 @@ class UserListSerializer(serializers.ModelSerializer):
 
 
 class WordReviewSerializer(serializers.ModelSerializer):
-    pass 
+    class Meta:
+        model = WordReview
+        fields = '__all__'
 
 
-class MCQOption(serializers.ModelSerializer):
-    pass
+class MCQOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MCQOption
+        fields = '__all__'
